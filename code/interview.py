@@ -1,8 +1,8 @@
 import sys
 import os
 
-# Sicherstellen, dass das übergeordnete Verzeichnis im Suchpfad ist
-sys.path.append(os.path.abspath(os.path.dirname(__file__)))
+# Sicherstellen, dass der übergeordnete Pfad im Suchpfad enthalten ist
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'code')))
 
 import streamlit as st
 import time
