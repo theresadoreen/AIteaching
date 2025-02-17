@@ -1,3 +1,9 @@
+import sys
+import os
+
+# Sicherstellen, dass das übergeordnete Verzeichnis im Suchpfad ist
+sys.path.append(os.path.abspath(os.path.dirname(__file__)))
+
 import streamlit as st
 import time
 from utils import (
