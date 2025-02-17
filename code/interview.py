@@ -91,6 +91,12 @@ with col2:
             config.TIMES_DIRECTORY,
         )
 
+# Sidebar mit Logout-Button
+with st.sidebar:
+    st.write(f"👤 Eingeloggt als: **{st.session_state.username}**")
+    if st.button("Logout", key="logout_button"):
+        st.session_state.clear()
+        st.rerun()
 
 # Upon rerun, display the previous conversation (except system prompt or first message)
 for message in st.session_state.messages[1:]:
