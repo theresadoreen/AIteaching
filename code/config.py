@@ -87,7 +87,7 @@ for directory in [TRANSCRIPTS_DIRECTORY, TIMES_DIRECTORY, BACKUPS_DIRECTORY]:
     os.makedirs(directory, exist_ok=True)
 
 # Authentication configuration
-LOGINS = False
+LOGINS = True
 LOGIN_CONFIG = {
     "require_auth": LOGINS,
     "session_timeout": 3600  # 1 hour timeout
