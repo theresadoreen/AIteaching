@@ -240,8 +240,8 @@ if st.session_state.interview_active:
 
                     save_interview_data(
                         username=st.session_state.username,
-                        transcripts_directory=config.BACKUPS_DIRECTORY,
-                        times_directory=config.BACKUPS_DIRECTORY,
+                        transcripts_directory=config.TRANSCRIPTS_DIRECTORY,
+                        times_directory=config.TRANSCRIPTS_DIRECTORY,
                         file_name_addition_transcript=f"_transcript_started_{st.session_state.start_time_file_names}",
                         file_name_addition_time=f"_time_started_{st.session_state.start_time_file_names}",
                     )
