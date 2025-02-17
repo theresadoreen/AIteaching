@@ -48,7 +48,8 @@ def check_if_interview_completed(directory, username):
     
     logging.info(f"No interview file found for user {username}.")
     return False
-
+    
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 def save_interview_data(
     username,
@@ -57,7 +58,13 @@ def save_interview_data(
     file_name_addition_transcript="",
     file_name_addition_time="",
 ):
-    """Write interview data (transcript and time) to disk."""
+    """Write interview data (transcript and time) to disk with debugging."""
+logging.info(f"save_interview_data() called for user: {username}")
+
+if not username:
+        logging.error("Username is None or empty. Transcript will not be saved.")
+        return
+     
     try:
         # Sicherstellen, dass Verzeichnisse existieren
         os.makedirs(transcripts_directory, exist_ok=True)
@@ -65,6 +72,9 @@ def save_interview_data(
         
         transcript_path = os.path.join(transcripts_directory, f"{username}{file_name_addition_transcript}.txt")
         time_path = os.path.join(times_directory, f"{username}{file_name_addition_time}.txt")
+
+        logging.info(f"Saving transcript to: {transcript_path}")
+        logging.info(f"Saving time data to: {time_path}")
         
         # Chat-Transkript speichern
         with open(transcript_path, "w") as t:
