@@ -2,10 +2,11 @@ import streamlit as st
 import hmac
 import time
 import os
+import logging
 
+# Logging einrichten
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-# Password screen for dashboard (note: only very basic authentication!)
-# Based on https://docs.streamlit.io/knowledge-base/deploy/authentication-without-sso
 def check_password():
     """Returns 'True' if the user has entered a correct password."""
 
@@ -23,17 +24,14 @@ def check_password():
             st.secrets.passwords[st.session_state.username],
         ):
             st.session_state.password_correct = True
-
         else:
             st.session_state.password_correct = False
 
         del st.session_state.password  # don't store password in session state
 
-    # Return True, username if password was already entered correctly before
     if st.session_state.get("password_correct", False):
         return True, st.session_state.username
 
-    # Otherwise show login screen
     login_form()
     if "password_correct" in st.session_state:
         st.error("User or password incorrect")
@@ -41,22 +39,15 @@ def check_password():
 
 
 def check_if_interview_completed(directory, username):
-    """Check if interview transcript/time file exists which signals that interview was completed."""
-
-    # Test account has multiple interview attempts
-    if username != "testaccount":
-
-        # Check if file exists
-        try:
-            with open(os.path.join(directory, f"{username}.txt"), "r") as _:
-                return True
-
-        except FileNotFoundError:
-            return False
-
-    else:
-
-        return False
+    """Check if interview transcript/time file exists."""
+    file_path = os.path.join(directory, f"{username}.txt")
+    
+    if os.path.exists(file_path):
+        logging.info(f"Interview file found for user {username}: {file_path}")
+        return True
+    
+    logging.info(f"No interview file found for user {username}.")
+    return False
 
 
 def save_interview_data(
@@ -67,23 +58,28 @@ def save_interview_data(
     file_name_addition_time="",
 ):
     """Write interview data (transcript and time) to disk."""
+    try:
+        # Sicherstellen, dass Verzeichnisse existieren
+        os.makedirs(transcripts_directory, exist_ok=True)
+        os.makedirs(times_directory, exist_ok=True)
+        
+        transcript_path = os.path.join(transcripts_directory, f"{username}{file_name_addition_transcript}.txt")
+        time_path = os.path.join(times_directory, f"{username}{file_name_addition_time}.txt")
+        
+        # Chat-Transkript speichern
+        with open(transcript_path, "w") as t:
+            for message in st.session_state.messages:
+                t.write(f"{message['role']}: {message['content']}\n")
+        logging.info(f"Interview transcript saved: {transcript_path}")
 
-    # Store chat transcript
-    with open(
-        os.path.join(
-            transcripts_directory, f"{username}{file_name_addition_transcript}.txt"
-        ),
-        "w",
-    ) as t:
-        for message in st.session_state.messages:
-            t.write(f"{message['role']}: {message['content']}\n")
-
-    # Store file with start time and duration of interview
-    with open(
-        os.path.join(times_directory, f"{username}{file_name_addition_time}.txt"),
-        "w",
-    ) as d:
+        # Startzeit und Dauer speichern
         duration = (time.time() - st.session_state.start_time) / 60
-        d.write(
-            f"Start time (UTC): {time.strftime('%d/%m/%Y %H:%M:%S', time.localtime(st.session_state.start_time))}\nInterview duration (minutes): {duration:.2f}"
-        )
+        with open(time_path, "w") as d:
+            d.write(
+                f"Start time (UTC): {time.strftime('%d/%m/%Y %H:%M:%S', time.localtime(st.session_state.start_time))}\n"
+                f"Interview duration (minutes): {duration:.2f}"
+            )
+        logging.info(f"Interview time data saved: {time_path}")
+        
+    except Exception as e:
+        logging.error(f"Error saving interview data for user {username}: {e}")
