@@ -77,25 +77,26 @@ if interview_previously_completed and not st.session_state.messages:
     completed_message = "Interview already completed."
     st.markdown(completed_message)
 
-# Add 'Quit' button to dashboard
+# Add 'Submit chat history' button to dashboard
 col1, col2 = st.columns([0.85, 0.15])
 # Place where the second column is
 with col2:
 
-    # If interview is active and 'Quit' button is clicked
+    # If interview is active and 'Submit chat history' button is clicked
     if st.session_state.interview_active and st.button(
-        "Quit", help="End the interview."
+        "Submit chat history", help="Submit the chat history for review."
     ):
 
-        # Set interview to inactive, display quit message, and store data
+        # Set interview to inactive, display submission message, and store data
         st.session_state.interview_active = False
-        quit_message = "You have cancelled the interview."
-        st.session_state.messages.append({"role": "assistant", "content": quit_message})
+        submit_message = "Your chat history has been submitted for review."
+        st.session_state.messages.append({"role": "assistant", "content": submit_message})
         save_interview_data(
             st.session_state.username,
             config.TRANSCRIPTS_DIRECTORY,
             config.TIMES_DIRECTORY,
         )
+        st.success(submit_message)
 
 # Sidebar mit Logout-Button
 with st.sidebar:
