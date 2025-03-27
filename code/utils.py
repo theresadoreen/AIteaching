@@ -51,20 +51,14 @@ def check_if_interview_completed(directory, username):
     
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
-def save_interview_data(
-    username,
-    transcripts_directory,
-    times_directory,
-    file_name_addition_transcript="",
-    file_name_addition_time="",
-):
+def save_interview_data(username, transcripts_directory, times_directory, file_name_addition_transcript="", file_name_addition_time=""):
     """Write interview data (transcript and time) to disk with debugging."""
-logging.info(f"save_interview_data() called for user: {username}")
+    logging.info(f"save_interview_data() called for user: {username}")
 
-if not username:
+    if not username:
         logging.error("Username is None or empty. Transcript will not be saved.")
         return
-     
+    
     try:
         # Sicherstellen, dass Verzeichnisse existieren
         os.makedirs(transcripts_directory, exist_ok=True)
