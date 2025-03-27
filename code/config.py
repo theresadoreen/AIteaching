@@ -64,7 +64,7 @@ SYSTEM_PROMPT = f"""{INTERVIEW_OUTLINE}
 
 
 # API parameters
-MODEL = "gpt-3.5-turbo"
+MODEL = "gpt-4o-mini-2024-07-18"
 TEMPERATURE = 0.3
 MAX_OUTPUT_TOKENS = 1000
 
