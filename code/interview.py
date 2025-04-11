@@ -1,5 +1,6 @@
 import sys
 import os
+import logging
 
 # Sicherstellen, dass der übergeordnete Pfad im Suchpfad enthalten ist
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'code')))
@@ -12,16 +13,28 @@ from utils import (
     save_interview_data,
 )
 import os
+
 import config
+"""
+The following parameters are contained in the config.py file:
+- Interview outline: INTERVIEW_OUTLINE
+- General instructions: GENERAL_INSTRUCTIONS
+- Codes: CODES
+- Pre-written closing messages for codes: CLOSING_MESSAGES
+- System prompt: SYSTEM_PROMPT
+- API parameters: MODEL, TEMPERATURE, MAX_OUTPUT_TOKENS
+- Display login screen with usernames and simple passwords for studies: LOGINS
+- Directories: TRANSCRIPTS_DIRECTORY, TIMES_DIRECTORY, BACKUPS_DIRECTORY
+"""
 
 # Load API library
-if "gpt" in config.MODEL.lower():
+if not config.MODEL or not config.API_KEY:
+    st.error("Configuration error: Missing model or API key.")
+    logging.error("Configuration error: Missing model or API key.")
+    st.stop()
+elif "gpt" in config.MODEL.lower():
     api = "openai"
     from openai import OpenAI
-
-elif "claude" in config.MODEL.lower():
-    api = "anthropic"
-    import anthropic
 else:
     raise ValueError(
         "Model does not contain 'gpt' or 'claude'; unable to determine API."
@@ -147,7 +160,12 @@ if not st.session_state.messages:
             {"role": "system", "content": config.SYSTEM_PROMPT}
         )
         with st.chat_message("assistant", avatar=config.AVATAR_INTERVIEWER):
-            stream = client.chat.completions.create(**api_kwargs)
+            try:
+                stream = client.chat.completions.create(**api_kwargs)
+            except Exception as e:
+                st.error("An error occurred while generating the response. Please try again.")
+                logging.error(f"Error during API call: {e}")
+                st.stop()
             message_interviewer = st.write_stream(stream)
 
     elif api == "anthropic":
