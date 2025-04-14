@@ -18,9 +18,15 @@ if not config.MODEL or not config.API_KEY:
     st.error("Configuration error: Missing model or API key.")
     logging.error("Configuration error: Missing model or API key.")
     st.stop()
+elif "gpt" in config.MODEL.lower():
+    api = "openai"
+    from openai import OpenAI
+elif "claude" in config.MODEL.lower():
+    api = "anthropic"
+    import anthropic
 else:
     raise ValueError(
-        "Model does not contain 'gpt'; unable to determine API."
+        "Model does not contain 'gpt' or 'claude'; unable to determine API."
     )
 
 # Set page title and icon
