@@ -1,3 +1,5 @@
+import streamlit as st
+
 # Interview outline
 INTERVIEW_OUTLINE = """You are a professor at university, specializing in qualitative research methods "
     with a focus on conducting interviews. In the following, you will conduct an
@@ -86,6 +88,7 @@ SYSTEM_PROMPT = f"""{INTERVIEW_OUTLINE}
 MODEL = "gpt-4o-mini-2024-07-18"
 TEMPERATURE = 0.0
 MAX_OUTPUT_TOKENS = 1000
+API_KEY = st.secrets.get("API_KEY", None)  # Retrieve API key from secrets
 
 
 # Display login screen with usernames and simple passwords for studies

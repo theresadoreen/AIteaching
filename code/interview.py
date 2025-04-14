@@ -14,21 +14,31 @@ import config
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'code')))
 
 # Load API library
-if not config.MODEL or not config.API_KEY:
+if not config.MODEL or "API_KEY" not in st.secrets:
     st.error("Configuration error: Missing model or API key.")
     logging.error("Configuration error: Missing model or API key.")
     st.stop()
 elif "gpt" in config.MODEL.lower():
     api = "openai"
     from openai import OpenAI
+    client = OpenAI(api_key=st.secrets["API_KEY"])
 elif "claude" in config.MODEL.lower():
     api = "anthropic"
     import anthropic
+    client = anthropic.Anthropic(api_key=st.secrets["API_KEY"])
 else:
     raise ValueError(
         "Model does not contain 'gpt' or 'claude'; unable to determine API."
     )
-
+    
+    
+# Verify API configuration
+if not config.MODEL or not config.API_KEY:
+    st.error("Configuration error: Missing model or API key.")
+    logging.error("Configuration error: Missing model or API key.")
+    st.stop()
+    
+    
 # Set page title and icon
 st.set_page_config(page_title="Interview", page_icon=config.AVATAR_INTERVIEWER)
 
