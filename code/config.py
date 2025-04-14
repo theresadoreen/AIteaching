@@ -84,7 +84,11 @@ SYSTEM_PROMPT = f"""{INTERVIEW_OUTLINE}
 
 # API parameters
 API_KEY = os.getenv(
-    "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"
+    (
+        "sk-proj-TrKO6amcouIRKtoUP5O5XJpeyx_VbgUWHnGzyjYuucTbr1BYTHWGBSSFK4NMiRSfNO1"
+        "dIFxpF8T3BlbkFJsIoDHKgjBTQQDdp0omEIj2Kqe9Am7AOm6lMNj9Pu4RIrtATQm1ADM_z9R9u7"
+        "jF-XqG9ZCfS50A"
+    )
 )
 MODEL = "gpt-4o-mini-2024-07-18"
 TEMPERATURE = 0.0
