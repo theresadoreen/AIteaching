@@ -7,12 +7,7 @@ import time
 # Sicherstellen, dass der übergeordnete Pfad im Suchpfad enthalten ist
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'code')))
 
-from utils import (
-    check_password,
-    check_if_interview_completed,
-    save_interview_data,
-)
-
+import utils
 import config
 """
 The following parameters are contained in the config.py file:
