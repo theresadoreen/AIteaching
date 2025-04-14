@@ -45,8 +45,8 @@ st.set_page_config(page_title="Interview", page_icon=config.AVATAR_INTERVIEWER)
 # Check if usernames and logins are enabled
 if config.LOGINS:
 
-# Check password (displays login screen)
-pwd_correct, username = check_password()
+    # Check password (displays login screen)
+    pwd_correct, username = check_password()
     if not pwd_correct:
         st.stop()
     else:
