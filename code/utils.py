@@ -1,6 +1,7 @@
 import streamlit as st
 import os  # Required for file and directory operations
 import logging
+import time # Required for time operations
 import bcrypt  # Add bcrypt for secure password hashing
 # Logging einrichten
 logging.basicConfig(
@@ -101,31 +102,32 @@ def save_interview_data(username, transcripts_directory, times_directory, file_n
     # Validate inputs
     if not username:
         logging.error("Username is None or empty. Transcript will not be saved.")
-        return
+        return False
     if not transcripts_directory:
         logging.error("Transcripts directory is None or empty. Transcript will not be saved.")
-        return
+        return False
     if not times_directory:
         logging.error("Times directory is None or empty. Time data will not be saved.")
-        return
+        return False
     if "messages" not in st.session_state or not st.session_state.messages:
         logging.error("No messages found in session state. Transcript will not be saved.")
-        return
+        return False
     if "start_time" not in st.session_state:
         logging.error("Start time not found in session state. Time data will not be saved.")
-        return
+        return False
     if not isinstance(file_name_addition_transcript, str):
         logging.error("File name addition for transcript is not a valid string.")
-        return
+        return False
     if not isinstance(file_name_addition_time, str):
         logging.error("File name addition for time is not a valid string.")
-        return
+        return False
 
     try:
         # Ensure directories exist
         os.makedirs(transcripts_directory, exist_ok=True)
         os.makedirs(times_directory, exist_ok=True)
-
+        
+        # Define file paths
         transcript_path = os.path.join(transcripts_directory, f"{username}{file_name_addition_transcript}.txt")
         time_path = os.path.join(times_directory, f"{username}{file_name_addition_time}.txt")
 
@@ -151,13 +153,17 @@ def save_interview_data(username, transcripts_directory, times_directory, file_n
             )
         os.replace(temp_time_path, time_path)
         logging.info(f"Interview time data saved: {time_path}")
+        
+        return True
 
     except OSError as e:
         logging.error(f"File operation failed for user {username}: {e}")
+        return False
     except Exception as e:
         logging.error(f"Unexpected error while saving data for user {username}: {e}")
-        
-        
+        return False
+
+# logout button with feedback      
 if st.button("Logout", key="logout_button"):
     st.session_state.clear()
-
+    st.success("You have been logged out successfully.")
