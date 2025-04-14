@@ -19,10 +19,8 @@ def check_password():
     """Returns (password_correct: bool, username: str or None)."""
     if "password_correct" not in st.session_state:
         login_form()
-        return False, None
-
-    return st.session_state.get("password_correct", False), st.session_state.get("username")
-
+        return False
+    return st.session_state.get("password_correct", False)
 
 
 def login_form():
@@ -56,13 +54,12 @@ def password_entered():
         return False
 
     # Validate credentials
-    if username in st.secrets["password"]:
-        if st.secrets.passwords[username] == password:
-            st.session_state["password_correct"] = True
-            del st.session_state["password"]
-            return True
+    if username in st.secrets["password"] and st.secrets[username] == password:
+        st.session_state["password_correct"] = True
+        del st.session_state["password"]
+        return True
     
-     # Login failed
+    # Login failed
     st.session_state["password_correct"] = False
     del st.session_state["password"]
     logging.warning(f"Failed login attempt for username: {username}")
