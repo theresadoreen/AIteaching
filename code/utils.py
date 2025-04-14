@@ -102,25 +102,25 @@ def save_interview_data(username, transcripts_directory, times_directory, file_n
     # Validate inputs
     if not username:
         logging.error("Username is None or empty. Transcript will not be saved.")
-        return False
+        return
     if not transcripts_directory:
         logging.error("Transcripts directory is None or empty. Transcript will not be saved.")
-        return False
+        return
     if not times_directory:
         logging.error("Times directory is None or empty. Time data will not be saved.")
-        return False
+        return
     if "messages" not in st.session_state or not st.session_state.messages:
         logging.error("No messages found in session state. Transcript will not be saved.")
-        return False
+        return
     if "start_time" not in st.session_state:
         logging.error("Start time not found in session state. Time data will not be saved.")
-        return False
+        return
     if not isinstance(file_name_addition_transcript, str):
         logging.error("File name addition for transcript is not a valid string.")
-        return False
+        return
     if not isinstance(file_name_addition_time, str):
         logging.error("File name addition for time is not a valid string.")
-        return False
+        return
 
     try:
         # Ensure directories exist
