@@ -1,18 +1,17 @@
 import sys
 import os
 import logging
+import streamlit as st
+import time
 
 # Sicherstellen, dass der übergeordnete Pfad im Suchpfad enthalten ist
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'code')))
 
-import streamlit as st
-import time
 from utils import (
     check_password,
     check_if_interview_completed,
     save_interview_data,
 )
-import os
 
 import config
 """
@@ -45,8 +44,9 @@ st.set_page_config(page_title="Interview", page_icon=config.AVATAR_INTERVIEWER)
 
 # Check if usernames and logins are enabled
 if config.LOGINS:
-    # Check password (displays login screen)
-    pwd_correct, username = check_password()
+
+# Check password (displays login screen)
+pwd_correct, username = check_password()
     if not pwd_correct:
         st.stop()
     else:
@@ -113,22 +113,25 @@ with col2:
 
 # Sidebar mit Logout-Button
 with st.sidebar:
-    st.write(f"👤 Eingeloggt als: **{st.session_state.username}**")
+    st.write(f"👤 Logged in as **{st.session_state.username}**")
     if st.button("Logout", key="logout_button"):
         st.session_state.clear()
         st.rerun()
 
-# Upon rerun, display the previous conversation (except system prompt or first message)
-for message in st.session_state.messages[1:]:
-
-    if message["role"] == "assistant":
-        avatar = config.AVATAR_INTERVIEWER
-    else:
-        avatar = config.AVATAR_RESPONDENT
-    # Only display messages without codes
-    if not any(code in message["content"] for code in config.CLOSING_MESSAGES.keys()):
-        with st.chat_message(message["role"], avatar=avatar):
-            st.markdown(message["content"])
+# Upon rerun, display the previous conversation 
+# (except system prompt or first message)
+    for message in st.session_state.messages[1:]:
+        if message["role"] == "assistant":
+            avatar = config.AVATAR_INTERVIEWER
+        else:
+            avatar = config.AVATAR_RESPONDENT
+        # Only display messages without codes
+        if all(
+            code not in message["content"]
+            for code in config.CLOSING_MESSAGES.keys()
+        ):
+            with st.chat_message(message["role"], avatar=avatar):
+                st.markdown(message["content"])
 
 # Load API client
 if api == "openai":
