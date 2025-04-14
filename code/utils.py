@@ -16,12 +16,12 @@ def configure_logging():
 
 
 def check_password():
-    """Returns 'True' if the user has entered correct password."""
+    """Returns (password_correct: bool, username: str or None)."""
     if "password_correct" not in st.session_state:
         login_form()
-        return False
+        return False, None
 
-    return st.session_state.get("password_correct", False)
+    return st.session_state.get("password_correct", False), st.session_state.get("username")
 
 
 
@@ -39,35 +39,34 @@ def login_form():
             # Call the function to handle login
             if password_entered():
                 st.success("Login successful!")
+                st.session_state["password_correct"] = True
             else:
                 st.error("Invalid username or password. Please try again.")
+                st.session_state["password_correct"] = False
 
 
 def password_entered():
     """Checks whether username and password entered by the user are correct."""
+    username = st.session_state.get("username")
+    password = st.session_state.get("password")
+    
     # Check if username and password exist in session state
-    if "username" not in st.session_state or "password" not in st.session_state:
-        logging.error("Username or password not provided in session state.")
+    if not username or not password:
+        logging.error("Username or password not provided.")
         return False
 
     # Validate credentials
-    if st.session_state.username in st.secrets.passwords:
-        hashed_password = st.secrets.passwords[st.session_state.username].encode('utf-8')
-        st.session_state.password_correct = bcrypt.checkpw(st.session_state.password.encode('utf-8'), hashed_password)
-    else:
-        st.session_state.password_correct = False
-
-    # Remove password from session state for security
-    del st.session_state.password
-
-    # Return the result of the validation
-    if st.session_state.get("password_correct", False):
-        return True
-
-    # Log failed login attempt
-    logging.warning(f"Failed login attempt for username: {st.session_state.username}")
+    if username in st.secrets["password"]:
+        if st.secrets.passwords[username] == password:
+            st.session_state["password_correct"] = True
+            del st.session_state["password"]
+            return True
+    
+     # Login failed
+    st.session_state["password_correct"] = False
+    del st.session_state["password"]
+    logging.warning(f"Failed login attempt for username: {username}")
     return False
-
 
 def check_if_interview_completed(directory, username):
     """Check if interview transcript/time file exists."""

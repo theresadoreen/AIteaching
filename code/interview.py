@@ -1,7 +1,7 @@
 from utils import (
     check_password,
     check_if_interview_completed,
-    save_interview_data,
+    save_interview_data
 )
 import sys
 import os
@@ -46,11 +46,11 @@ st.set_page_config(page_title="Interview", page_icon=config.AVATAR_INTERVIEWER)
 if config.LOGINS:
 
     # Check password (displays login screen)
-    pwd_correct, username = check_password()
+    pwd_correct = check_password()
     if not pwd_correct:
         st.stop()
     else:
-        st.session_state.username = username
+        st.session_state.username = st.session_state.get("username")
 else:
     st.session_state.username = "testaccount"
 
