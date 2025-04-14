@@ -54,7 +54,7 @@ def password_entered():
         return False
 
     # Validate credentials
-    if username in st.secrets["password"] and st.secrets[username] == password:
+    if username in st.secrets["password"][username] == password:
         st.session_state["password_correct"] = True
         del st.session_state["password"]
         return True
