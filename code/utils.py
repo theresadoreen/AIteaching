@@ -10,63 +10,79 @@ logging.basicConfig(
 
 
 def configure_logging():
- logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
     # No changes needed for $PLACEHOLDER$ as it is empty.
-
 
 
 def check_password():
     """Returns 'True' if the user has entered correct password."""
-    def login_form():
-        """Form with widgets to collect user information"""
-        with st.form("Credentials"):
+    if "password_correct" not in st.session_state:
+        login_form()
+        return False
 
-
-            st.text_input("Username", key="username")
-
-
-            st.text_input("Password", type="password", key="password")
-            st.form_submit_button("Log in", on_click=password_entered)
+    return st.session_state.get("password_correct", False)
 
 
 
 def login_form():
     """Form with widgets to collect user information"""
-    with st.form("Credentials"):  # Fixed indentation
-        st.text_input("Username", key="username")
-        st.text_input("Password", type="password", key="password")
-        st.form_submit_button("Log in", on_click=password_entered)
+    with st.form("Credentials"):  # Create a form for login
+        st.text_input("Username", key="username")  # Input for username
+        st.text_input("Password", type="password", key="password")  # Input for password
+        if st.form_submit_button("Log in"):  # Submit button
+            # Validate empty inputs
+            if not st.session_state.username or not st.session_state.password:
+                st.error("Username and password cannot be empty.")
+                return
+
+            # Call the function to handle login
+            if password_entered():
+                st.success("Login successful!")
+            else:
+                st.error("Invalid username or password. Please try again.")
 
 
 def password_entered():
     """Checks whether username and password entered by the user are correct."""
+    # Check if username and password exist in session state
+    if "username" not in st.session_state or "password" not in st.session_state:
+        logging.error("Username or password not provided in session state.")
+        return False
+
+    # Validate credentials
     if st.session_state.username in st.secrets.passwords:
-        hashed_password = st.secrets.passwords[st.session_state.username].encode('utf-8')  # Fixed indentation
+        hashed_password = st.secrets.passwords[st.session_state.username].encode('utf-8')
         st.session_state.password_correct = bcrypt.checkpw(st.session_state.password.encode('utf-8'), hashed_password)
     else:
         st.session_state.password_correct = False
 
+    # Remove password from session state for security
+    del st.session_state.password
 
-    del st.session_state.password  # Don't store password in session state
-
+    # Return the result of the validation
     if st.session_state.get("password_correct", False):
-        return True, st.session_state.username
+        return True
 
-    login_form()
-    if "password_correct" in st.session_state:
-        st.error("User or password incorrect")
-        logging.warning(f"Failed login attempt for username: {st.session_state.username}")
-    return False, st.session_state.username
+    # Log failed login attempt
+    logging.warning(f"Failed login attempt for username: {st.session_state.username}")
+    return False
 
 
 def check_if_interview_completed(directory, username):
     """Check if interview transcript/time file exists."""
-    if not directory or not username:  # Check if directory or username is invalid
-        logging.error("Invalid directory or username provided.")
+    if not directory:
+        logging.error("Invalid directory provided.")
+        return False
+    if not username:
+        logging.error("Invalid username provided.")
+        return False
+    if not os.path.exists(directory):
+        logging.error(f"Directory does not exist: {directory}")
         return False
 
     try:
         file_path = os.path.join(directory, f"{username}.txt")
+        logging.info(f"Checking for file: {file_path}")
         if os.path.exists(file_path):
             logging.info(f"Interview file found for user {username}: {file_path}")
             return True
@@ -82,8 +98,27 @@ def save_interview_data(username, transcripts_directory, times_directory, file_n
     """Write interview data (transcript and time) to disk with debugging."""
     logging.info(f"save_interview_data() called for user: {username}")
 
+    # Validate inputs
     if not username:
         logging.error("Username is None or empty. Transcript will not be saved.")
+        return
+    if not transcripts_directory:
+        logging.error("Transcripts directory is None or empty. Transcript will not be saved.")
+        return
+    if not times_directory:
+        logging.error("Times directory is None or empty. Time data will not be saved.")
+        return
+    if "messages" not in st.session_state or not st.session_state.messages:
+        logging.error("No messages found in session state. Transcript will not be saved.")
+        return
+    if "start_time" not in st.session_state:
+        logging.error("Start time not found in session state. Time data will not be saved.")
+        return
+    if not isinstance(file_name_addition_transcript, str):
+        logging.error("File name addition for transcript is not a valid string.")
+        return
+    if not isinstance(file_name_addition_time, str):
+        logging.error("File name addition for time is not a valid string.")
         return
 
     try:
@@ -117,10 +152,12 @@ def save_interview_data(username, transcripts_directory, times_directory, file_n
         os.replace(temp_time_path, time_path)
         logging.info(f"Interview time data saved: {time_path}")
 
+    except OSError as e:
+        logging.error(f"File operation failed for user {username}: {e}")
     except Exception as e:
-        logging.error(f"Error saving interview data for user {username}: {e}")
-
+        logging.error(f"Unexpected error while saving data for user {username}: {e}")
+        
+        
 if st.button("Logout", key="logout_button"):
     st.session_state.clear()
-    st.experimental_rerun()
-    
+
