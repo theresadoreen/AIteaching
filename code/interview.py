@@ -1,37 +1,26 @@
+from utils import (
+    check_password,
+    check_if_interview_completed,
+    save_interview_data,
+)
 import sys
 import os
 import logging
 import streamlit as st
 import time
+import config
 
 # Sicherstellen, dass der übergeordnete Pfad im Suchpfad enthalten ist
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'code')))
-
-import utils
-import config
-"""
-The following parameters are contained in the config.py file:
-- Interview outline: INTERVIEW_OUTLINE
-- General instructions: GENERAL_INSTRUCTIONS
-- Codes: CODES
-- Pre-written closing messages for codes: CLOSING_MESSAGES
-- System prompt: SYSTEM_PROMPT
-- API parameters: MODEL, TEMPERATURE, MAX_OUTPUT_TOKENS
-- Display login screen with usernames and simple passwords for studies: LOGINS
-- Directories: TRANSCRIPTS_DIRECTORY, TIMES_DIRECTORY, BACKUPS_DIRECTORY
-"""
 
 # Load API library
 if not config.MODEL or not config.API_KEY:
     st.error("Configuration error: Missing model or API key.")
     logging.error("Configuration error: Missing model or API key.")
     st.stop()
-elif "gpt" in config.MODEL.lower():
-    api = "openai"
-    from openai import OpenAI
 else:
     raise ValueError(
-        "Model does not contain 'gpt' or 'claude'; unable to determine API."
+        "Model does not contain 'gpt'; unable to determine API."
     )
 
 # Set page title and icon
@@ -98,7 +87,12 @@ with col2:
         # Set interview to inactive, display submission message, and store data
         st.session_state.interview_active = False
         submit_message = "Your chat history has been submitted for review."
-        st.session_state.messages.append({"role": "assistant", "content": submit_message})
+        st.session_state.messages.append(
+            {
+                "role": "assistant",
+                "content": submit_message,
+            }
+        )
         save_interview_data(
             st.session_state.username,
             config.TRANSCRIPTS_DIRECTORY,
@@ -132,9 +126,7 @@ with st.sidebar:
 if api == "openai":
     client = OpenAI(api_key=st.secrets["API_KEY"])
     api_kwargs = {"stream": True}
-elif api == "anthropic":
-    client = anthropic.Anthropic(api_key=st.secrets["API_KEY"])
-    api_kwargs = {"system": config.SYSTEM_PROMPT}
+
 
 # API kwargs
 api_kwargs["messages"] = st.session_state.messages
@@ -148,7 +140,7 @@ print(api_kwargs)
 if "proxies" in api_kwargs:
     del api_kwargs["proxies"]
 
-# In case the interview history is still empty, pass system prompt to model, and
+# In case the interview history is still empty, pass system prompt to model
 # generate and display its first message
 if not st.session_state.messages:
 
@@ -165,19 +157,6 @@ if not st.session_state.messages:
                 logging.error(f"Error during API call: {e}")
                 st.stop()
             message_interviewer = st.write_stream(stream)
-
-    elif api == "anthropic":
-
-        st.session_state.messages.append({"role": "user", "content": "Hi"})
-        with st.chat_message("assistant", avatar=config.AVATAR_INTERVIEWER):
-            message_placeholder = st.empty()
-            message_interviewer = ""
-            with client.messages.stream(**api_kwargs) as stream:
-                for text_delta in stream.text_stream:
-                    if text_delta != None:
-                        message_interviewer += text_delta
-                    message_placeholder.markdown(message_interviewer + "▌")
-            message_placeholder.markdown(message_interviewer)
 
     st.session_state.messages.append(
         {"role": "assistant", "content": message_interviewer}
@@ -275,11 +254,12 @@ if st.session_state.interview_active:
                         file_name_addition_time=f"_time_started_{st.session_state.start_time_file_names}",
                     )
 
-                except:
+                except Exception:
 
                     pass
 
-            # If code in the message, display the associated closing message instead
+            # If code is in the message, display the associated 
+            # closing message instead
             # Loop over all codes
             for code in config.CLOSING_MESSAGES.keys():
 
@@ -299,7 +279,7 @@ if st.session_state.interview_active:
 
                     # Store final transcript and time
                     final_transcript_stored = False
-                    while final_transcript_stored == False:
+                    while not final_transcript_stored:
 
                         save_interview_data(
                             username=st.session_state.username,

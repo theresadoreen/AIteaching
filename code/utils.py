@@ -2,7 +2,7 @@ import streamlit as st
 import os  # Required for file and directory operations
 import logging
 import time # Required for time operations
-import bcrypt  # Add bcrypt for secure password hashing
+
 # Logging einrichten
 logging.basicConfig(
     level=logging.INFO,
